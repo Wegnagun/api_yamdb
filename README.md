@@ -32,7 +32,7 @@ api_yamdb
 `pip install -r requirements.txt `
 
 ### Запуск
-Перейдити в дирректорию yatube_api и выполните миграции:
+Перейдити в дирректорию api_yamdb и выполните миграции:
 
 `python manage.py migrate `
 
