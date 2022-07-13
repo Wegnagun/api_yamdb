@@ -4,6 +4,40 @@ from django.db import models
 from django.utils import timezone
 
 
+class Title(models.Model):
+    name = models.CharField(max_length=50,
+                            verbose_name='Произведение')
+    year = models.IntegerField(
+        validators=[MaxValueValidator(timezone.now().year)],
+        verbose_name='Год создания'
+    )
+    description = models.CharField(max_length=255,
+                                   blank=True,
+                                   null=True,
+                                   verbose_name='Описание'
+                                   )
+    genre = models.ManyToManyField(
+        'Genre',
+        related_name='titles',
+        verbose_name='Жанр'
+    )
+    category = models.ForeignKey(
+        'Category',
+        on_delete=models.SET_NULL,
+        related_name='titles',
+        blank=True,
+        null=True,
+        verbose_name='Категория'
+    )
+
+    class Meta:
+        verbose_name = 'Объект творчества'
+        verbose_name_plural = 'Объекты творчества'
+
+    def __str__(self):
+        return f'{self.name}'
+
+
 class Category(models.Model):
     name = models.CharField(max_length=256,
                             verbose_name='Тип категории')
@@ -38,40 +72,6 @@ ROLE_CHOICES = (
     ('moderator', 'Модератор'),
     ('admin', 'Администратор'),
 )
-
-
-class Title(models.Model):
-    name = models.CharField(max_length=50,
-                            verbose_name='Произведение')
-    year = models.IntegerField(
-        validators=[MaxValueValidator(timezone.now().year)],
-        verbose_name='Год создания'
-    )
-    description = models.CharField(max_length=255,
-                                   blank=True,
-                                   null=True,
-                                   verbose_name='Описание'
-                                   )
-    genre = models.ManyToManyField(
-        Genre,
-        related_name='titles',
-        verbose_name='Жанр'
-    )
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.SET_NULL,
-        related_name='titles',
-        blank=True,
-        null=True,
-        verbose_name='Категория'
-    )
-
-    class Meta:
-        verbose_name = 'Объект творчества'
-        verbose_name_plural = 'Объекты творчества'
-
-    def __str__(self):
-        return f'{self.name}'
 
 
 class MyOwnUser(AbstractUser):
