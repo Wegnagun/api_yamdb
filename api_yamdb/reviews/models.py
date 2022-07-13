@@ -4,42 +4,8 @@ from django.db import models
 from django.utils import timezone
 
 
-class Titles(models.Model):
-    name = models.CharField(max_length=50,
-                            verbose_name='Произведение')
-    creation_year = models.IntegerField(
-        validators=[MaxValueValidator(timezone.now().year)],
-        verbose_name='Год создания'
-    )
-    description = models.CharField(max_length=255,
-                                   null=True,
-                                   verbose_name='Описание'
-                                   )
-    genre = models.ManyToManyField(
-        'Genres',
-        related_name='genres',
-        verbose_name='Жанр'
-    )
-    category = models.ForeignKey(
-        'Categories',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        related_name='categories',
-        verbose_name='Категория'
-    )
-
-    class Meta:
-        verbose_name = 'Объект творчества'
-        verbose_name_plural = 'Объекты творчества'
-
-    def __str__(self):
-        return f'{self.name}'
-
-
-class Categories(models.Model):
-    name = models.CharField(unique=True,
-                            max_length=256,
+class Category(models.Model):
+    name = models.CharField(max_length=256,
                             verbose_name='Тип категории')
     slug = models.SlugField(unique=True, max_length=50)
 
@@ -52,7 +18,7 @@ class Categories(models.Model):
         return f'{self.name}'
 
 
-class Genres(models.Model):
+class Genre(models.Model):
     name = models.CharField(unique=True,
                             max_length=50,
                             verbose_name='Название жанра')
@@ -72,6 +38,39 @@ ROLE_CHOICES = (
     ('moderator', 'Модератор'),
     ('admin', 'Администратор'),
 )
+
+
+class Title(models.Model):
+    name = models.CharField(max_length=50,
+                            verbose_name='Произведение')
+    year = models.IntegerField(
+        validators=[MaxValueValidator(timezone.now().year)],
+        verbose_name='Год создания'
+    )
+    description = models.CharField(max_length=255,
+                                   null=True,
+                                   verbose_name='Описание'
+                                   )
+    genre = models.ManyToManyField(
+        Genre,
+        related_name='titles',
+        verbose_name='Жанр'
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        related_name='titles',
+        blank=True,
+        null=True,
+        verbose_name='Категория'
+    )
+
+    class Meta:
+        verbose_name = 'Объект творчества'
+        verbose_name_plural = 'Объекты творчества'
+
+    def __str__(self):
+        return f'{self.name}'
 
 
 class MyOwnUser(AbstractUser):
@@ -95,7 +94,7 @@ class MyOwnUser(AbstractUser):
         default='user',
         verbose_name='Роль'
     )
-    biography = models.TextField(
+    bio = models.TextField(
         blank=True,
         verbose_name='Биография'
     )
