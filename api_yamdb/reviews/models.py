@@ -48,6 +48,7 @@ class Title(models.Model):
         verbose_name='Год создания'
     )
     description = models.CharField(max_length=255,
+                                   blank=True,
                                    null=True,
                                    verbose_name='Описание'
                                    )

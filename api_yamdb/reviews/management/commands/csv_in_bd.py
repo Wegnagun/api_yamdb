@@ -5,9 +5,9 @@ from reviews.models import Category, Genre, Title, MyOwnUser
 
 TABLES = {
     MyOwnUser: 'users.csv',
+    Category: 'category.csv',
+    Genre: 'genre.csv',
     Title: 'titles.csv',
-    Category: 'categories.csv',
-    Genre: 'genres.csv'
     #  когда будут модели раскоментить
     # Reviews: 'reviews.csv,
     # Comments: 'comments.csv,
@@ -23,5 +23,4 @@ class Command(BaseCommand):
                       'r', encoding='utf-8') as file:
                 reader = csv.DictReader(file)
                 model.objects.bulk_create(model(**data) for data in reader)
-                self.stdout.write('Все готово')
-                # self.stdout.write(self.style.SUCCES('Готово'))
+                self.stdout.write(f'{model} обновлен!')

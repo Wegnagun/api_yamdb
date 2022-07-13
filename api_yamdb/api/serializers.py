@@ -12,6 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
+        # fields = ('name', 'slug')
         exclude = ('id',)
 
 
