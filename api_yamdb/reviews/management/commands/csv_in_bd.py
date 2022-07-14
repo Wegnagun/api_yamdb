@@ -22,7 +22,5 @@ class Command(BaseCommand):
             with open(f'{settings.BASE_DIR}/static/data/{data}',
                       'r', encoding='utf-8') as file:
                 reader = csv.DictReader(file)
-                for i in reader:
-                    print(**data)
                 model.objects.bulk_create(model(**data) for data in reader)
                 self.stdout.write(f'{model} обновлен!')
