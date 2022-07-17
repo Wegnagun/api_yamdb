@@ -82,8 +82,7 @@ class APISignUp(views.APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         email_body = (
-            f'Доброе время суток, {user.username}.'
-            f'\nКод подтвержения для доступа к API: {user.confirmation_code}'
+            f'Код подтвержения для доступа к API: {user.confirmation_code}'
         )
         data = {
             'email_body': email_body,
@@ -183,6 +182,8 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = AdminUserSerializer
     permission_classes = (IsRoleAdmin,)
     filter_backends = (filters.SearchFilter,)
+    lookup_field = 'username'
+    search_fields = ('username',)
 
     @action(
         detail=False, methods=['get', 'patch'],
