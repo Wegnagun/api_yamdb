@@ -13,17 +13,22 @@ from .permissions import (IsAuthorOrReadOnly, IsRoleAdmin, IsRoleModerator,
                           ReadOnly)
 from .serializers import (CategorySerializer, CreateTokenSerializer,
                           GenreSerializer, SignUpSerializer,
-                          TitleSerializer, ReviewSerializer, CommentSerializer,
-                          AdminUserSerializer, UserSerializer)
+                          TitleReadSerializer, TitleCreateSerializer,
+                          CommentSerializer, AdminUserSerializer,
+                          UserSerializer, ReviewSerializer)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = (Title.objects.all().annotate
                 (Avg("reviews__score")).order_by('name'))
-    serializer_class = TitleSerializer
+    serializer_class = TitleReadSerializer
     permission_classes = (IsRoleAdmin | ReadOnly,)
     filterset_class = TitleFilter
-    search_fields = ('category',)
+
+    def get_serializer_class(self):
+        if self.request.method in ('POST', 'PATCH',):
+            return TitleCreateSerializer
+        return TitleReadSerializer
 
 
 class GenreViewSet(viewsets.ModelViewSet):

@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from django.utils import timezone
+from django.db.models import Avg
 
 from reviews.models import Category, Genre, MyOwnUser, Title, Comment, Review
 
@@ -33,17 +35,17 @@ class GenreSerializer(serializers.ModelSerializer):
         exclude = ('id',)
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
-    genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.IntegerField(
-        source='reviews__score__avg', read_only=True)
-
-    class Meta:
-        model = Title
-        fields = ('id', 'name', 'year', 'rating',
-                  'description', 'genre', 'category')
-        read_only_fields = ('id', 'rating')
+# class TitleSerializer(serializers.ModelSerializer):
+#     category = CategorySerializer(read_only=True)
+#     genre = GenreSerializer(read_only=True, many=True)
+#     rating = serializers.IntegerField(
+#         source='reviews__score__avg', read_only=True)
+#
+#     class Meta:
+#         model = Title
+#         fields = ('id', 'name', 'year', 'rating',
+#                   'description', 'genre', 'category')
+#         read_only_fields = ('id', 'rating')
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -118,3 +120,44 @@ class AdminUserSerializer(serializers.ModelSerializer):
                 'Имя пользователя "me" не разрешено.'
             )
         return value
+
+
+class TitleCreateSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(
+        slug_field='slug', queryset=Category.objects.all(),
+    )
+    genre = serializers.SlugRelatedField(
+        slug_field='slug', queryset=Genre.objects.all(), many=True
+    )
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name', 'year', 'description', 'genre', 'category'
+        )
+
+    def validate_year(self, value):
+        current_year = timezone.now().year
+        if not 0 <= value <= current_year:
+            raise serializers.ValidationError(
+                'Проверьте год создания!'
+            )
+        return value
+
+
+class TitleReadSerializer(serializers.ModelSerializer):
+    rating = serializers.SerializerMethodField()
+    category = CategorySerializer()
+    genre = GenreSerializer(many=True)
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
+
+    def get_rating(self, obj):
+        rating = obj.reviews.aggregate(Avg('score')).get('score__avg')
+        if not rating:
+            return rating
+        return round(rating, 1)
