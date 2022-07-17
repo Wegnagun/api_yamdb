@@ -34,7 +34,7 @@ class GenreViewSet(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
     permission_classes = (IsRoleAdmin | ReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    search_field = ('name',)
+    search_fields = ('name',)
 
     @action(
         detail=False, methods=['delete'],
@@ -53,7 +53,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = (IsRoleAdmin | ReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    search_field = ('=name',)
+    search_fields = ('name', 'slug')
 
     @action(
         detail=False, methods=['delete'],
