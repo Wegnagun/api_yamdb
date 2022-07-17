@@ -10,23 +10,25 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Category, Genre, Title, MyOwnUser, Review
-from .permissions import IsAdminOrReadOnly, IsOwnerOrStaffOrReadOnly
+from .permissions import (IsAdminOrReadOnly, IsOwnerOrStaffOrReadOnly,
+                          IsRoleAdmin)
 from .serializers import (CategorySerializer, CreateTokenSerializer,
                           GenreSerializer, SignUpSerializer,
-                          TitleSerializer, ReviewSerializer, CommentSerializer)
+                          TitleSerializer, ReviewSerializer, CommentSerializer,
+                          AdminUserSerializer)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(rating=Avg("reviews__score"))
     serializer_class = TitleSerializer
-    permission_classes = IsAdminOrReadOnly
+    permission_classes = (IsAdminOrReadOnly,)
     filterset_class = TitleFilter
 
 
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = IsAdminOrReadOnly
+    permission_classes = (IsAdminOrReadOnly,)
     filter_class = [filters.SearchFilter]
     lookup_field = 'slug'
     search_field = ('=name',)
@@ -35,7 +37,7 @@ class GenreViewSet(viewsets.ModelViewSet):
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = IsAdminOrReadOnly
+    permission_classes = (IsAdminOrReadOnly,)
     filter_class = [filters.SearchFilter]
     lookup_field = 'slug'
     search_field = ('=name',)
@@ -106,3 +108,10 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return get_object_or_404(
             Review, pk=self.kwargs.get('review_id')).comments.all()
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = MyOwnUser.objects.all()
+    serializer_class = AdminUserSerializer
+    permission_classes = (IsRoleAdmin,)
+    filter_backends = (filters.SearchFilter,)

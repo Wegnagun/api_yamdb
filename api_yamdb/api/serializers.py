@@ -7,10 +7,21 @@ from reviews.models import Category, Genre, MyOwnUser, Title, Comment, Review
 
 
 class UserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(required=True)
+    email = serializers.CharField(required=True)
+    role = serializers.StringRelatedField(read_only=True)
+
     class Meta:
         model = MyOwnUser
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
+
+        def validate_username(self, value):
+            if value == 'me':
+                raise serializers.ValidationError(
+                    'Имя пользователя "me" не разрешено.'
+                )
+            return value
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -81,3 +92,19 @@ class ReviewSerializer(serializers.ModelSerializer):
         raise ValidationError(
             'На одно произведение пользователь'
             'может оставить только один отзыв.')
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = MyOwnUser
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role',
+        )
+
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Имя пользователя "me" не разрешено.'
+            )
+        return value
