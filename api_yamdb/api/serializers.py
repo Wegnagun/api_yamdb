@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.db.models import Avg
 
 from reviews.models import Category, Genre, MyOwnUser, Title, Comment, Review
 
@@ -45,12 +44,6 @@ class TitleSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'year', 'rating',
                   'description', 'genre', 'category')
         read_only_fields = ('id', 'rating')
-
-    # def get_rating(self, obj):
-    #     rating = obj.reviews.aggregate(Avg('score')).get('score__avg').order_by('name')
-    #     if not rating:
-    #         return rating
-    #     return round(rating, 1)
 
 
 class SignUpSerializer(serializers.ModelSerializer):
