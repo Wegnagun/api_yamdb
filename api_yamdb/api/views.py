@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.mail import send_mail
 from rest_framework import status, views, viewsets
+from django.db.models import Avg
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Genre, Title, MyOwnUser
@@ -14,7 +15,7 @@ from .serializers import (CategorySerializer, CreateTokenSerializer,
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(rating=Avg("reviews__score"))
     serializer_class = TitleSerializer
     permission_classes = IsAdminOrReadOnly
     # filterset_class =
