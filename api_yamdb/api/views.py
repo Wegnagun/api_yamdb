@@ -1,17 +1,18 @@
 import uuid
-from django.shortcuts import get_object_or_404
+
 from django.conf import settings
 from django.core.mail import send_mail
-from rest_framework import status, views, viewsets
 from django.db.models import Avg
+from django.shortcuts import get_object_or_404
+from rest_framework import status, views, viewsets
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import Category, Genre, Title, MyOwnUser
 
-from .permissons import IsAdminOrReadOnly
+from reviews.models import Category, Genre, Title, MyOwnUser, Review
+from .permissions import IsAdminOrReadOnly, IsOwnerOrStaffOrReadOnly
 from .serializers import (CategorySerializer, CreateTokenSerializer,
                           GenreSerializer, SignUpSerializer,
-                          TitleSerializer)
+                          TitleSerializer, ReviewSerializer, CommentSerializer)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -69,3 +70,34 @@ class APICreateToken(views.APIView):
             {'token': str(RefreshToken.for_user(user).access_token)},
             status=status.HTTP_200_OK
         )
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = (IsOwnerOrStaffOrReadOnly,)
+
+    def perform_create(self, serializer):
+        serializer.save(
+            author=self.request.user,
+            title=get_object_or_404(Title, id=self.kwargs.get('title_id')))
+
+    def get_queryset(self):
+        return get_object_or_404(
+            Title, pk=self.kwargs.get('title_id')).reviews.all()
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = (IsOwnerOrStaffOrReadOnly,)
+
+    def perform_create(self, serializer):
+        serializer.save(
+            author=self.request.user,
+            review=get_object_or_404(
+                Review,
+                id=self.kwargs.get('review_id'),
+                title=self.kwargs.get('title_id')))
+
+    def get_queryset(self):
+        return get_object_or_404(
+            Review, pk=self.kwargs.get('review_id')).comments.all()
