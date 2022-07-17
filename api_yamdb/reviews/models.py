@@ -30,8 +30,10 @@ class Title(models.Model):
         verbose_name='Категория'
     )
     rating = models.PositiveSmallIntegerField(default=0,
-        validators=[MinValueValidator(1), MaxValueValidator(10)],
-        verbose_name='Рейтинг')
+                                              validators=[
+                                                  MinValueValidator(1),
+                                                  MaxValueValidator(10)],
+                                              verbose_name='Рейтинг')
 
     class Meta:
         verbose_name = 'Объект творчества'
@@ -102,7 +104,7 @@ class MyOwnUser(AbstractUser):
         blank=True,
         verbose_name='Биография'
     )
-    conf_code = models.CharField(
+    confirmation_code = models.CharField(
         max_length=60
     )
 
