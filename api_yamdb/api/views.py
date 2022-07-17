@@ -1,15 +1,11 @@
-import uuid
-
 from django.core.mail import EmailMessage
-from django.conf import settings
-from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import status, views, viewsets, filters
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from reviews.models import Category, Genre, Title, MyOwnUser, Review
 from .filters import TitleFilter
@@ -27,6 +23,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     permission_classes = (IsRoleAdmin | ReadOnly,)
     filterset_class = TitleFilter
+    search_fields = ('category',)
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -118,23 +115,6 @@ class APICreateToken(views.APIView):
         return Response(
             {'confirmation_code': 'Неверный код подтверждения!'},
             status=status.HTTP_400_BAD_REQUEST)
-
-    # def post(self, request):
-    #     serializer = CreateTokenSerializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     user = get_object_or_404(
-    #         MyOwnUser,
-    #         username=serializer.validated_data['username']
-    #     )
-    #     if serializer.validated_data['conf_code'] != user.conf_code:
-    #         return Response(
-    #             {'conf_code': 'Несовпадают коды!'},
-    #             status=status.HTTP_400_BAD_REQUEST
-    #         )
-    #     return Response(
-    #         {'token': str(RefreshToken.for_user(user).access_token)},
-    #         status=status.HTTP_200_OK
-    #     )
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
