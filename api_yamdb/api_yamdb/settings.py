@@ -123,3 +123,6 @@ SIMPLE_JWT = {
 AUTH_USER_MODEL = 'reviews.MyOwnUser'
 
 EMPTY_STRING_FOR_ADMIN_PY = '-пусто-'
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')

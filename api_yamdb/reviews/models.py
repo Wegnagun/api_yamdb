@@ -99,6 +99,9 @@ class MyOwnUser(AbstractUser):
         blank=True,
         verbose_name='Биография'
     )
+    conf_code = models.CharField(
+        max_length=60
+    )
 
     class Meta:
         verbose_name = 'Пользователь'
