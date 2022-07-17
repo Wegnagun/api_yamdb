@@ -19,7 +19,7 @@ from .serializers import (CategorySerializer, CreateTokenSerializer,
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all().annotate(rating=Avg("reviews__score"))
+    queryset = Title.objects.all().annotate(Avg("reviews__score"))
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filterset_class = TitleFilter
@@ -29,7 +29,7 @@ class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_class = [filters.SearchFilter]
+    filterset_class = [filters.SearchFilter]
     lookup_field = 'slug'
     search_field = ('=name',)
 
@@ -38,7 +38,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_class = [filters.SearchFilter]
+    filterset_class = [filters.SearchFilter]
     lookup_field = 'slug'
     search_field = ('=name',)
 

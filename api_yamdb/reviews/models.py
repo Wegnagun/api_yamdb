@@ -29,6 +29,9 @@ class Title(models.Model):
         null=True,
         verbose_name='Категория'
     )
+    rating = models.PositiveSmallIntegerField(default=0,
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        verbose_name='Рейтинг')
 
     class Meta:
         verbose_name = 'Объект творчества'
