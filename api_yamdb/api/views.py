@@ -81,6 +81,9 @@ class APISignUp(views.APIView):
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        if user.username == 'me':
+            return Response('Нельзя создавать пользователя с таким именем',
+                            status=status.HTTP_400_BAD_REQUEST)
         email_body = (
             f'Код подтвержения для доступа к API: {user.confirmation_code}'
         )
@@ -91,25 +94,14 @@ class APISignUp(views.APIView):
         }
         self.send_email(data)
         return Response(serializer.data, status=status.HTTP_200_OK)
-# class APISignUp(views.APIView):
-#
-#     def post(self, request):
-#         serializer = SignUpSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         confirmation_code = str(uuid.uuid4())
-#         send_mail(
-#             'Ваш код подтверждения',
-#             confirmation_code,
-#             settings.DEFAULT_FROM_EMAIL,
-#             [serializer.validated_data.get('email')]
-#         )
-#         serializer.save(confirmation_code=confirmation_code)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class APICreateToken(views.APIView):
-
     def post(self, request):
+        if self.request.method == 'POST':
+            if 'username' in request.data:
+                get_object_or_404(
+                    MyOwnUser.objects, username=request.data['username'])
         serializer = CreateTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
