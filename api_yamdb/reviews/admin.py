@@ -3,7 +3,7 @@ from django.contrib.admin import ModelAdmin, register
 
 from api_yamdb.settings import EMPTY_STRING_FOR_ADMIN_PY
 
-from .models import Category, Genre, MyOwnUser, Title
+from .models import Category, Genre, MyOwnUser, Title, Review, Comment
 
 ModelAdmin.empty_value_display = EMPTY_STRING_FOR_ADMIN_PY
 
@@ -15,6 +15,8 @@ class MyUserAdmin(ModelAdmin):
 
 
 admin.site.register(MyOwnUser, MyUserAdmin)
+admin.site.register(Review)
+admin.site.register(Comment)
 
 
 @register(Title)

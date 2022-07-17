@@ -3,8 +3,9 @@ import uuid
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models import Avg
+from .filters import TitleFilter
 from django.shortcuts import get_object_or_404
-from rest_framework import status, views, viewsets
+from rest_framework import status, views, viewsets, filters
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -19,21 +20,25 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(rating=Avg("reviews__score"))
     serializer_class = TitleSerializer
     permission_classes = IsAdminOrReadOnly
-    # filterset_class =
+    filterset_class = TitleFilter
 
 
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = IsAdminOrReadOnly
-    # filterset_class =
+    filter_class = [filters.SearchFilter]
+    lookup_field = 'slug'
+    search_field = ('=name',)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = IsAdminOrReadOnly
-    # filterset_class =
+    filter_class = [filters.SearchFilter]
+    lookup_field = 'slug'
+    search_field = ('=name',)
 
 
 class APISignUp(views.APIView):

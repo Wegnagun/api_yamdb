@@ -7,7 +7,7 @@ from .views import (APICreateToken, APISignUp, CategoryViewSet, GenreViewSet,
 router = routers.DefaultRouter()
 router.register('titles', TitleViewSet, basename='titles')
 router.register('genres', GenreViewSet, basename='genres')
-router.register('category', CategoryViewSet, basename='category')
+router.register('categories', CategoryViewSet, basename='category')
 router.register(
     r'titles/(?P<title_id>\d+)/reviews',
     ReviewViewSet, basename='reviews')
@@ -18,6 +18,6 @@ router.register(
 
 urlpatterns = [
     path('v1/', include(router.urls)),
-    path('auth/signup/', APISignUp.as_view(), name='signup'),
-    path('auth/token/', APICreateToken.as_view(), name='token')
+    path('v1/auth/signup/', APISignUp.as_view(), name='signup'),
+    path('v1/auth/token/', APICreateToken.as_view(), name='token')
 ]

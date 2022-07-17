@@ -2,16 +2,15 @@ import csv
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from reviews.models import Category, Genre, MyOwnUser, Title
+from reviews.models import Category, Genre, MyOwnUser, Title, Review, Comment
 
 TABLES = {
     MyOwnUser: 'users.csv',
     Category: 'category.csv',
     Genre: 'genre.csv',
+    Review: 'review.csv',
+    Comment: 'comments.csv',
     Title: 'titles.csv'
-    #  когда будут модели раскоментить
-    # Reviews: 'reviews.csv,
-    # Comments: 'comments.csv,
 }
 
 
