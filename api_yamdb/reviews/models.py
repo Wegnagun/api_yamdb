@@ -1,6 +1,6 @@
-from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from users.models import CustomUser
 
 
 class Title(models.Model):
@@ -74,55 +74,6 @@ ROLE_CHOICES = (
 )
 
 
-class MyOwnUser(AbstractUser):
-    username = models.CharField(
-        max_length=150,
-        unique=True,
-        blank=False,
-        null=False,
-        verbose_name='имя пользователя'
-    )
-    email = models.EmailField(
-        max_length=254,
-        unique=True,
-        blank=False,
-        null=False,
-        verbose_name='Адрес электронной почты'
-    )
-    role = models.CharField(
-        max_length=255,
-        choices=ROLE_CHOICES,
-        default='user',
-        verbose_name='Роль'
-    )
-    bio = models.TextField(
-        blank=True,
-        verbose_name='Биография'
-    )
-    confirmation_code = models.CharField(
-        max_length=60
-    )
-
-    class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
-
-    def __str__(self):
-        return self.username
-
-    @property
-    def is_admin(self):
-        return self.role == 'admin'
-
-    @property
-    def is_moderator(self):
-        return self.role == 'moderator'
-
-    @property
-    def is_user(self):
-        return self.role == 'user'
-
-
 # id,title_id,text,author,score,pub_date
 class Review(models.Model):
     title = models.ForeignKey(
@@ -132,7 +83,7 @@ class Review(models.Model):
     )
     text = models.TextField()
     author = models.ForeignKey(
-        MyOwnUser,
+        CustomUser,
         on_delete=models.CASCADE,
         related_name='reviews',
     )
@@ -148,6 +99,8 @@ class Review(models.Model):
     )
 
     class Meta:
+        verbose_name = 'Обзор'
+        verbose_name_plural = 'Обзоры'
         constraints = [
             models.UniqueConstraint(
                 fields=['title', 'author'],
@@ -168,7 +121,7 @@ class Comment(models.Model):
     )
     text = models.TextField()
     author = models.ForeignKey(
-        MyOwnUser,
+        CustomUser,
         on_delete=models.CASCADE,
         related_name='comments',
     )
@@ -176,6 +129,10 @@ class Comment(models.Model):
         auto_now_add=True,
         db_index=True
     )
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
 
     def __str__(self):
         return self.text

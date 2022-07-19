@@ -2,12 +2,11 @@ from django.core.mail import EmailMessage
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import status, views, viewsets, filters
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from reviews.models import Category, Genre, Title, MyOwnUser, Review
+from reviews.models import Category, Genre, Title, Review
+from users.models import CustomUser
 from .filters import TitleFilter
 from .mixins import ListCreateDestroyViewSet
 from .permissions import (IsAuthorOrReadOnly, IsRoleModerator,
@@ -15,8 +14,7 @@ from .permissions import (IsAuthorOrReadOnly, IsRoleModerator,
 from .serializers import (CategorySerializer, CreateTokenSerializer,
                           GenreSerializer, SignUpSerializer,
                           TitleReadSerializer, TitleCreateSerializer,
-                          CommentSerializer, AdminUserSerializer,
-                          UserSerializer, ReviewSerializer)
+                          CommentSerializer, ReviewSerializer)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -84,13 +82,13 @@ class APICreateToken(views.APIView):
         if self.request.method == 'POST':
             if 'username' in request.data:
                 get_object_or_404(
-                    MyOwnUser.objects, username=request.data['username'])
+                    CustomUser.objects, username=request.data['username'])
         serializer = CreateTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         try:
-            user = MyOwnUser.objects.get(username=data['username'])
-        except MyOwnUser.DoesNotExist:
+            user = CustomUser.objects.get(username=data['username'])
+        except CustomUser.DoesNotExist:
             return Response(
                 {'username': 'Пользователь не найден!'},
                 status=status.HTTP_404_NOT_FOUND)
@@ -133,28 +131,3 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return get_object_or_404(
             Review, pk=self.kwargs.get('review_id')).comments.all()
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = MyOwnUser.objects.all()
-    serializer_class = AdminUserSerializer
-    permission_classes = (IsRoleAdmin,)
-    filter_backends = (filters.SearchFilter,)
-    lookup_field = 'username'
-    search_fields = ('username',)
-
-    @action(
-        detail=False, methods=['get', 'patch'],
-        url_path='me', url_name='me',
-        permission_classes=(IsAuthenticated,)
-    )
-    def about_me(self, request):
-        serializer = UserSerializer(request.user)
-        if request.method == 'PATCH':
-            serializer = UserSerializer(
-                request.user, data=request.data, partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_200_OK)

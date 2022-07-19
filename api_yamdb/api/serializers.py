@@ -1,26 +1,7 @@
-from django.db.models import Avg
-from django.utils import timezone
 from rest_framework import serializers
 
-from reviews.models import Category, Genre, MyOwnUser, Title, Comment, Review
-
-
-class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(required=True)
-    email = serializers.CharField(required=True)
-    role = serializers.StringRelatedField(read_only=True)
-
-    class Meta:
-        model = MyOwnUser
-        fields = ('username', 'email', 'first_name',
-                  'last_name', 'bio', 'role')
-
-        def validate_username(self, value):
-            if value == 'me':
-                raise serializers.ValidationError(
-                    'Имя пользователя "me" не разрешено.'
-                )
-            return value
+from reviews.models import Category, Genre, Title, Comment, Review
+from users.models import CustomUser
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -38,7 +19,7 @@ class GenreSerializer(serializers.ModelSerializer):
 class SignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = MyOwnUser
+        model = CustomUser
         fields = ('email', 'username')
 
 
@@ -47,7 +28,7 @@ class CreateTokenSerializer(serializers.Serializer):
     conf_code = serializers.CharField(required=True, max_length=150)
 
     class Meta:
-        model = MyOwnUser
+        model = CustomUser
         fields = ('username', 'conf_code')
 
 
@@ -96,7 +77,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 class AdminUserSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = MyOwnUser
+        model = CustomUser
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role',
         )

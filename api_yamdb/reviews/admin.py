@@ -2,19 +2,11 @@ from django.contrib import admin
 from django.contrib.admin import ModelAdmin, register
 
 from api_yamdb.settings import EMPTY_STRING_FOR_ADMIN_PY
-
-from .models import Category, Genre, MyOwnUser, Title, Review, Comment
+from .models import Category, Genre, Title, Review, Comment
 
 ModelAdmin.empty_value_display = EMPTY_STRING_FOR_ADMIN_PY
 
 
-class MyUserAdmin(ModelAdmin):
-    list_display = ('username', 'email', 'role')
-    fields = ('username', 'first_name', 'last_name', 'email', 'role',
-              'bio')
-
-
-admin.site.register(MyOwnUser, MyUserAdmin)
 admin.site.register(Review)
 admin.site.register(Comment)
 

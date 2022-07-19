@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django_filters',
     'api',
     'reviews',
+    'users'
 ]
 
 MIDDLEWARE = [
@@ -120,7 +121,7 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-AUTH_USER_MODEL = 'reviews.MyOwnUser'
+AUTH_USER_MODEL = 'users.CustomUser'
 
 EMPTY_STRING_FOR_ADMIN_PY = '-----'
 
