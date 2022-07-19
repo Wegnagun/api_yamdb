@@ -2,10 +2,11 @@ import csv
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from reviews.models import Category, Genre, MyOwnUser, Title, Review, Comment
+from users.models import CustomUser
+from reviews.models import Category, Genre, Title, Review, Comment
 
 TABLES = [
-    (MyOwnUser, 'users.csv'),
+    (CustomUser, 'users.csv'),
     (Category, 'category.csv'),
     (Genre, 'genre.csv'),
     (Review, 'review.csv'),
@@ -38,7 +39,8 @@ class Command(BaseCommand):
             '-l',
             '--load',
             choices=[
-                'MyOwnUser', 'category', 'genre', 'review', 'comments', 'titles'
+                'CustomUser', 'category', 'genre', 'review', 'comments',
+                'titles'
             ],
             type=str
         )

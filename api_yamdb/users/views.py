@@ -18,8 +18,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=False, methods=['get', 'patch'],
-        url_path='me', url_name='me',
-        permission_classes=(IsAuthenticated,)
+        url_path='me', permission_classes=(IsAuthenticated,)
     )
     def about_me(self, request):
         serializer = UserSerializer(request.user)

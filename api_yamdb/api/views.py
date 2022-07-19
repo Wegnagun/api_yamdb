@@ -1,7 +1,8 @@
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from rest_framework import status, views, viewsets, filters
+from rest_framework import status, viewsets, filters, decorators
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -15,6 +16,15 @@ from .serializers import (CategorySerializer, CreateTokenSerializer,
                           GenreSerializer, SignUpSerializer,
                           TitleReadSerializer, TitleCreateSerializer,
                           CommentSerializer, ReviewSerializer)
+
+
+def send_email(user, code):
+    email = EmailMessage(
+        subject='Код подтвержения для доступа к API!',
+        body=code,
+        to=[user.email, ]
+    )
+    email.send()
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -48,57 +58,39 @@ class CategoryViewSet(ListCreateDestroyViewSet):
     lookup_field = 'slug'
 
 
-class APISignUp(views.APIView):
-    @staticmethod
-    def send_email(data):
-        email = EmailMessage(
-            subject=data['email_subject'],
-            body=data['email_body'],
-            to=[data['to_email']]
-        )
-        email.send()
-
-    def post(self, request):
-        serializer = SignUpSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        if user.username == 'me':
-            return Response('Нельзя создавать пользователя с таким именем',
-                            status=status.HTTP_400_BAD_REQUEST)
-        email_body = (
-            f'Код подтвержения для доступа к API: {user.confirmation_code}'
-        )
-        data = {
-            'email_body': email_body,
-            'to_email': user.email,
-            'email_subject': 'Код подтвержения для доступа к API!'
-        }
-        self.send_email(data)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+@decorators.api_view(['POST'])
+def SignUp(request):
+    serializer = SignUpSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = serializer.save()
+    code = default_token_generator.make_token(user)
+    send_email(user, code)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class APICreateToken(views.APIView):
-    def post(self, request):
-        if self.request.method == 'POST':
-            if 'username' in request.data:
-                get_object_or_404(
-                    CustomUser.objects, username=request.data['username'])
+@decorators.api_view(['POST'])
+def CreateToken(request):
+    try:
+        if 'username' in request.data:
+            user = get_object_or_404(
+                CustomUser.objects, username=request.data['username'])
         serializer = CreateTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        try:
-            user = CustomUser.objects.get(username=data['username'])
-        except CustomUser.DoesNotExist:
-            return Response(
-                {'username': 'Пользователь не найден!'},
-                status=status.HTTP_404_NOT_FOUND)
-        if data.get('confirmation_code') == user.confirmation_code:
-            token = RefreshToken.for_user(user).access_token
-            return Response({'token': str(token)},
-                            status=status.HTTP_201_CREATED)
+    except CustomUser.DoesNotExist:
         return Response(
-            {'confirmation_code': 'Неверный код подтверждения!'},
-            status=status.HTTP_400_BAD_REQUEST)
+            {'username': 'Пользователь не найден!'},
+            status=status.HTTP_404_NOT_FOUND)
+
+    if default_token_generator.check_token(user, data['confirmation_code']):
+        return Response(
+            {'token': str(RefreshToken.for_user(user).access_token)},
+            status=status.HTTP_201_CREATED
+        )
+    return Response(
+        {'confirmation_code': 'Неверный код подтверждения!'},
+        status=status.HTTP_400_BAD_REQUEST
+    )
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

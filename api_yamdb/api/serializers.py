@@ -22,14 +22,15 @@ class SignUpSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ('email', 'username')
 
+        def validate_username(self, value):
+            if value == 'me':
+                raise serializers.ValidationError('Имя не должно быть - "me".')
+            return value
+
 
 class CreateTokenSerializer(serializers.Serializer):
-    username = serializers.CharField(required=True, max_length=150)
-    conf_code = serializers.CharField(required=True, max_length=150)
-
-    class Meta:
-        model = CustomUser
-        fields = ('username', 'conf_code')
+    username = serializers.CharField(required=True, max_length=50)
+    confirmation_code = serializers.CharField(required=True, max_length=50)
 
 
 class CommentSerializer(serializers.ModelSerializer):
