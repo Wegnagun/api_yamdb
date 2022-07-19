@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from reviews.models import Category, Genre, Title, Comment, Review
 from users.models import CustomUser
+from rest_framework.validators import UniqueValidator
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -20,17 +21,23 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('email', 'username')
+        fields = ('username', 'email',)
 
-        def validate_username(self, value):
-            if value == 'me':
-                raise serializers.ValidationError('Имя не должно быть - "me".')
-            return value
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Имя пользователя "me" не разрешено.'
+            )
+        return value
 
 
 class CreateTokenSerializer(serializers.Serializer):
-    username = serializers.CharField(required=True, max_length=50)
-    confirmation_code = serializers.CharField(required=True, max_length=50)
+    username = serializers.CharField(required=True)
+    confirmation_code = serializers.CharField(required=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ('username', 'confirmation_code')
 
 
 class CommentSerializer(serializers.ModelSerializer):

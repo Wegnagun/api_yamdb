@@ -1,8 +1,11 @@
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import EmailMessage
+from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from rest_framework import status, viewsets, filters, decorators
+from rest_framework import status, viewsets, filters
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -18,13 +21,13 @@ from .serializers import (CategorySerializer, CreateTokenSerializer,
                           CommentSerializer, ReviewSerializer)
 
 
-def send_email(user, code):
-    email = EmailMessage(
-        subject='Код подтвержения для доступа к API!',
-        body=code,
-        to=[user.email, ]
-    )
-    email.send()
+def send_email_code(user):
+    confirmation_code = default_token_generator.make_token(user)
+    subject = 'Код подтверждения для доступа к API!',
+    message = f'Ваш код {confirmation_code}',
+    from_email = settings.FROM_EMAIL,
+    recipient_list = [user.email]
+    return send_mail(subject, message, from_email, recipient_list)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -58,38 +61,33 @@ class CategoryViewSet(ListCreateDestroyViewSet):
     lookup_field = 'slug'
 
 
-@decorators.api_view(['POST'])
-def SignUp(request):
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def signup(request):
     serializer = SignUpSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    user = serializer.save()
-    code = default_token_generator.make_token(user)
-    send_email(user, code)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    if serializer.is_valid():
+        user = serializer.save()
+        send_email_code(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@decorators.api_view(['POST'])
-def CreateToken(request):
-    try:
-        if 'username' in request.data:
-            user = get_object_or_404(
-                CustomUser.objects, username=request.data['username'])
-        serializer = CreateTokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-    except CustomUser.DoesNotExist:
-        return Response(
-            {'username': 'Пользователь не найден!'},
-            status=status.HTTP_404_NOT_FOUND)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def create_token(request):
+    serializer = CreateTokenSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    if default_token_generator.check_token(user, data['confirmation_code']):
-        return Response(
-            {'token': str(RefreshToken.for_user(user).access_token)},
-            status=status.HTTP_201_CREATED
-        )
+    username = serializer.data['username']
+    user = get_object_or_404(CustomUser, username=username)
+    confirmation_code = serializer.data['confirmation_code']
+    if not default_token_generator.check_token(user, confirmation_code):
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    token = RefreshToken.for_user(user)
     return Response(
-        {'confirmation_code': 'Неверный код подтверждения!'},
-        status=status.HTTP_400_BAD_REQUEST
+        {'token': str(token.access_token)}, status=status.HTTP_200_OK
     )
 
 
