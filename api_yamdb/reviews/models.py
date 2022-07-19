@@ -1,14 +1,13 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.utils import timezone
 
 
 class Title(models.Model):
     name = models.CharField(max_length=50,
                             verbose_name='Произведение')
     year = models.IntegerField(
-        validators=[MaxValueValidator(timezone.now().year)],
+        validators=[MaxValueValidator(32767), MinValueValidator(0)],
         verbose_name='Год создания'
     )
     description = models.CharField(max_length=255,
@@ -29,13 +28,9 @@ class Title(models.Model):
         null=True,
         verbose_name='Категория'
     )
-    rating = models.PositiveSmallIntegerField(default=0,
-                                              validators=[
-                                                  MinValueValidator(1),
-                                                  MaxValueValidator(10)],
-                                              verbose_name='Рейтинг')
 
     class Meta:
+        ordering = ['name']
         verbose_name = 'Объект творчества'
         verbose_name_plural = 'Объекты творчества'
 
