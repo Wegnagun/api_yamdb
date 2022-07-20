@@ -9,8 +9,8 @@ TABLES = [
     (CustomUser, 'users.csv'),
     (Category, 'category.csv'),
     (Genre, 'genre.csv'),
-    (Review, 'review.csv'),
     (Comment, 'comments.csv'),
+    (Review, 'review.csv'),
     (Title, 'titles.csv')
 ]
 
@@ -19,28 +19,40 @@ class Command(BaseCommand):
     help = 'import data from csv to sqlite'
 
     def handle(self, *args, **options):
-        print(options['load'])
-        model = TABLES
-        with open(f'{settings.BASE_DIR}/static/data/{options["load"]}.csv',
-                  'r', encoding='utf-8') as file:
-            reader = csv.DictReader(file)
-            options["load"].objects.bulk_create(
-                options["load"](**data) for data in reader)
-
-        # for model, data in TABLES.items():
-        #     with open(f'{settings.BASE_DIR}/static/data/{data}',
-        #               'r', encoding='utf-8') as file:
-        #         reader = csv.DictReader(file)
-        #         model.objects.bulk_create(model(**data) for data in reader)
-        #         self.stdout.write(self.style.SUCCESS(f'{model} обновлен!'))
+        if options['load'] is None:
+            for model, data in TABLES:
+                try:
+                    f = open(f'{settings.BASE_DIR}/static/data/{data}', 'r',
+                             encoding='utf-8')
+                except IOError:
+                    self.stdout.write(self.style.ERROR(
+                        'Не удалось открыть файл!'))
+                else:
+                    with f as file:
+                        reader = csv.DictReader(file)
+                        model.objects.bulk_create(
+                            model(**data) for data in reader)
+        else:
+            for elem in TABLES:
+                if options['load'] in elem:
+                    try:
+                        f = open(
+                            f'{settings.BASE_DIR}/static/data/{elem[1]}',
+                            'r', encoding='utf-8')
+                    except IOError:
+                        self.stdout.write(self.style.ERROR(
+                            'Не удалось открыть файл!'))
+                    else:
+                        with f as file:
+                            reader = csv.DictReader(file)
+                            elem[0].objects.bulk_create(
+                                elem[0](**data) for data in reader)
+        self.stdout.write(self.style.SUCCESS('Все данные загружены'))
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '-l',
             '--load',
-            choices=[
-                'CustomUser', 'category', 'genre', 'review', 'comments',
-                'titles'
-            ],
-            type=str
+            choices=[item[1] for item in TABLES],
+            type=str,
+            help='Выберите файл для загрузки(пример.csv)'
         )

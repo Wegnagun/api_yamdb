@@ -40,7 +40,7 @@ Python 3.7, Django 2.2, DRF, JWT
 `pip install -r requirements.txt `
 
 ### Запуск
-Перейдити в дирректорию api_yamdb и выполните миграции:
+Перейдити в дирректорию **api_yamdb** и выполните миграции:
 
 `python manage.py migrate `
 

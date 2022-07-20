@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.db import models
 
 ROLE_CHOICES = (
@@ -49,11 +49,11 @@ class CustomUser(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == self.ROLE_ADMIN
+        return self.role == self.ROLE_ADMIN or self.is_superuser
 
     @property
     def is_moderator(self):
-        return self.role == self.ROLE_MODERATOR
+        return self.role == self.ROLE_MODERATOR or self.is_staff
 
     @property
     def is_user(self):

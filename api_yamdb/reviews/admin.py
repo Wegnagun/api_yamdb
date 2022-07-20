@@ -1,10 +1,10 @@
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin, register
 
-from api_yamdb.settings import EMPTY_STRING_FOR_ADMIN_PY
+from django.conf import settings
 from .models import Category, Genre, Title, Review, Comment
 
-ModelAdmin.empty_value_display = EMPTY_STRING_FOR_ADMIN_PY
+ModelAdmin.empty_value_display = settings.EMPTY_STRING_FOR_ADMIN_PY
 
 
 admin.site.register(Review)
@@ -18,8 +18,8 @@ class TitlesAdmin(ModelAdmin):
     search_fields = ('name',)
     list_filter = ('name',)
 
-    def get_genres(self, obj):
-        return '\n, '.join([str(genre) for genre in obj.genre.all()])
+    def get_genres(self, title):
+        return ',\n'.join([str(genre) for genre in title.genre.all()])
 
 
 @register(Category)
