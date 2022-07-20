@@ -1,6 +1,5 @@
-from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets, filters
@@ -21,15 +20,13 @@ from .serializers import (CategorySerializer, CreateTokenSerializer,
                           CommentSerializer, ReviewSerializer)
 
 
-def send_email_code(username, email):
-    user = get_object_or_404(CustomUser, username=username)
-    confirmation_code = default_token_generator.make_token(user)
-    subject = 'Код подтверждения для доступа к API!',
-    message = f'Ваш код {confirmation_code}',
-    from_email = settings.FROM_EMAIL,
-    recipient_list = [email]
-    print(f'=========={recipient_list}==========')
-    send_mail(subject, message, from_email, recipient_list)
+def send_email(user, code):
+    email = EmailMessage(
+        subject='Код подтвержения для доступа к API!',
+        body=code,
+        to=[user.email, ]
+    )
+    email.send()
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -67,10 +64,10 @@ class CategoryViewSet(ListCreateDestroyViewSet):
 @permission_classes([AllowAny])
 def signup(request):
     serializer = SignUpSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        send_email_code(serializer.data['username'],
-                        serializer.data['email'])
+    if serializer.is_valid(raise_exception=True):
+        user = serializer.save()
+        code = default_token_generator.make_token(user)
+        send_email(user, code)
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

@@ -3,9 +3,9 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from api.permissions import IsRoleAdmin
 from users.models import CustomUser
-from api.permissions import (IsRoleAdmin, IsAdminOrReadOnly)
-from .serializers import UserSerializer
+from .serializers import UserSerializer, UserUpgradeSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -23,7 +23,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def about_me(self, request):
         serializer = UserSerializer(request.user)
         if request.method == 'PATCH':
-            serializer = UserSerializer(
+            serializer = UserUpgradeSerializer(
                 request.user, data=request.data, partial=True
             )
             serializer.is_valid(raise_exception=True)

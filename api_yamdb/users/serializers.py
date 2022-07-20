@@ -10,7 +10,11 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
 
-        def validate_username(self, value):
-            if value == 'me':
-                raise serializers.ValidationError('Меня не ложно быть - me.')
-            return value
+
+class UserUpgradeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomUser
+        fields = ('username', 'email', 'first_name',
+                  'last_name', 'bio', 'role')
+        read_only_fields = ('role', )
