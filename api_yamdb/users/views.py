@@ -5,13 +5,13 @@ from rest_framework.response import Response
 
 from users.models import CustomUser
 from api.permissions import (IsRoleAdmin, IsAdminOrReadOnly)
-from .serializers import (UserSerializer)
+from .serializers import UserSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsRoleAdmin,)
     filter_backends = (filters.SearchFilter,)
     lookup_field = 'username'
     search_fields = ('username',)

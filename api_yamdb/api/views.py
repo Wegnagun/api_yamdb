@@ -21,13 +21,15 @@ from .serializers import (CategorySerializer, CreateTokenSerializer,
                           CommentSerializer, ReviewSerializer)
 
 
-def send_email_code(user):
+def send_email_code(username, email):
+    user = get_object_or_404(CustomUser, username=username)
     confirmation_code = default_token_generator.make_token(user)
     subject = 'Код подтверждения для доступа к API!',
     message = f'Ваш код {confirmation_code}',
     from_email = settings.FROM_EMAIL,
-    recipient_list = [user.email]
-    return send_mail(subject, message, from_email, recipient_list)
+    recipient_list = [email]
+    print(f'=========={recipient_list}==========')
+    send_mail(subject, message, from_email, recipient_list)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -66,8 +68,9 @@ class CategoryViewSet(ListCreateDestroyViewSet):
 def signup(request):
     serializer = SignUpSerializer(data=request.data)
     if serializer.is_valid():
-        user = serializer.save()
-        send_email_code(user)
+        serializer.save()
+        send_email_code(serializer.data['username'],
+                        serializer.data['email'])
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

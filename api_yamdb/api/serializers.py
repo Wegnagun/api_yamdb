@@ -2,7 +2,6 @@ from rest_framework import serializers
 
 from reviews.models import Category, Genre, Title, Comment, Review
 from users.models import CustomUser
-from rest_framework.validators import UniqueValidator
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -78,22 +77,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         if not 1 <= value <= 10:
             raise serializers.ValidationError(
                 'Оценка должна быть от 1 до 10.'
-            )
-        return value
-
-
-class AdminUserSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = CustomUser
-        fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role',
-        )
-
-    def validate_username(self, value):
-        if value == 'me':
-            raise serializers.ValidationError(
-                'Имя пользователя "me" не разрешено.'
             )
         return value
 
