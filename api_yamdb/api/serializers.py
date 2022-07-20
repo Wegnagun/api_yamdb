@@ -40,25 +40,21 @@ class CreateTokenSerializer(serializers.Serializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField(
-        read_only=True, many=False)
-    review = serializers.StringRelatedField(
-        read_only=True, many=False)
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True)
 
     class Meta:
         model = Comment
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'pub_date')
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField(
-        read_only=True, many=False)
-    title = serializers.StringRelatedField(
-        read_only=True, many=False)
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True)
 
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
 
     def validate(self, data):
         if self.context['request'].method != 'POST':
@@ -72,13 +68,6 @@ class ReviewSerializer(serializers.ModelSerializer):
                 'Вы уже написали отзыв к этому произведению.'
             )
         return data
-
-    def validate_score(self, value):
-        if not 1 <= value <= 10:
-            raise serializers.ValidationError(
-                'Оценка должна быть от 1 до 10.'
-            )
-        return value
 
 
 class TitleCreateSerializer(serializers.ModelSerializer):
