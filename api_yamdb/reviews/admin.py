@@ -1,7 +1,7 @@
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin, register
 
-from django.conf import settings
 from .models import Category, Genre, Title, Review, Comment
 
 ModelAdmin.empty_value_display = settings.EMPTY_STRING_FOR_ADMIN_PY
