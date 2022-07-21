@@ -12,8 +12,7 @@ from reviews.models import Category, Genre, Title, Review
 from users.models import CustomUser
 from .filters import TitleFilter
 from .mixins import ListCreateDestroyViewSet
-from .permissions import (IsAuthorOrReadOnly, IsRoleModerator,
-                          IsAdminOrReadOnly, IsRoleAdmin)
+from .permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
 from .serializers import (CategorySerializer, CreateTokenSerializer,
                           GenreSerializer, SignUpSerializer,
                           TitleReadSerializer, TitleCreateSerializer,
@@ -93,7 +92,7 @@ def create_token(request):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsRoleAdmin | IsRoleModerator | IsAuthorOrReadOnly,)
+    permission_classes = (IsAuthorOrAdminOrReadOnly,)
 
     def perform_create(self, serializer):
         serializer.save(
@@ -108,7 +107,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsRoleAdmin | IsRoleModerator | IsAuthorOrReadOnly,)
+    permission_classes = (IsAuthorOrAdminOrReadOnly,)
 
     def perform_create(self, serializer):
         serializer.save(
