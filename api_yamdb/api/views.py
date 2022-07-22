@@ -76,6 +76,8 @@ def create_token(request):
     serializer = CreateTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = get_object_or_404(CustomUser, username=serializer.data['username'])
+    # нельзя изменить строчку выше, так как она используется в том числе для
+    # проверки того, что пользователь с таким username-ом существует.
     confirmation_code = serializer.data['confirmation_code']
     if default_token_generator.check_token(user, confirmation_code):
         return Response(

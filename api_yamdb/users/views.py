@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from api.permissions import IsRoleAdmin
 from users.models import CustomUser
-from .serializers import UserSerializer, UserUpgradeSerializer
+from .serializers import UserSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -23,7 +23,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def about_me(self, request):
         serializer = UserSerializer(request.user)
         if request.method == 'PATCH':
-            serializer = UserUpgradeSerializer(
+            serializer = UserSerializer(
                 request.user, data=request.data, partial=True
             )
             serializer.is_valid(raise_exception=True)
