@@ -1,9 +1,11 @@
 from django.contrib.admin import ModelAdmin, register
+from django.contrib.auth import get_user_model
 
-from .models import CustomUser
+
+user = get_user_model()
 
 
-@register(CustomUser)
+@register(user)
 class UserAdmin(ModelAdmin):
     list_display = ('username', 'email', 'role')
     fields = ('username', 'first_name', 'last_name',

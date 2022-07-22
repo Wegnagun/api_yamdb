@@ -74,19 +74,15 @@ def signup(request):
 @permission_classes([AllowAny])
 def create_token(request):
     serializer = CreateTokenSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    username = serializer.data['username']
-    user = get_object_or_404(CustomUser, username=username)
+    serializer.is_valid(raise_exception=True)
+    user = get_object_or_404(CustomUser, username=serializer.data['username'])
     confirmation_code = serializer.data['confirmation_code']
-    if not default_token_generator.check_token(user, confirmation_code):
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    token = RefreshToken.for_user(user)
-    return Response(
-        {'token': str(token.access_token)}, status=status.HTTP_200_OK
-    )
+    if default_token_generator.check_token(user, confirmation_code):
+        return Response(
+            {'token': str(RefreshToken.for_user(user).access_token)},
+            status=status.HTTP_200_OK
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
