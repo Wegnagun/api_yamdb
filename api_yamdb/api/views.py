@@ -9,7 +9,6 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Category, Genre, Title, Review
-from users.models import CustomUser
 from .filters import TitleFilter
 from .mixins import ListCreateDestroyViewSet
 from .permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
@@ -75,16 +74,14 @@ def signup(request):
 def create_token(request):
     serializer = CreateTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    user = get_object_or_404(CustomUser, username=serializer.data['username'])
-    # нельзя изменить строчку выше, так как она используется в том числе для
-    # проверки того, что пользователь с таким username-ом существует.
+    user = serializer.data['username']
     confirmation_code = serializer.data['confirmation_code']
     if default_token_generator.check_token(user, confirmation_code):
         return Response(
             {'token': str(RefreshToken.for_user(user).access_token)},
             status=status.HTTP_200_OK
         )
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

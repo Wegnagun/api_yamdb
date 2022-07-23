@@ -1,5 +1,6 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils import timezone
 
 from users.models import CustomUser
 
@@ -7,8 +8,9 @@ from users.models import CustomUser
 class Title(models.Model):
     name = models.CharField(max_length=50,
                             verbose_name='Произведение')
-    year = models.IntegerField(
-        validators=[MaxValueValidator(32767), MinValueValidator(0)],
+    year = models.PositiveSmallIntegerField(
+        validators=[MaxValueValidator(timezone.now().year),
+                    MinValueValidator(0)],
         verbose_name='Год создания'
     )
     description = models.CharField(max_length=255,
@@ -66,13 +68,6 @@ class Genre(models.Model):
 
     def __str__(self):
         return f'{self.name}'
-
-
-ROLE_CHOICES = (
-    ('user', 'Пользователь'),
-    ('moderator', 'Модератор'),
-    ('admin', 'Администратор'),
-)
 
 
 class Review(models.Model):

@@ -2,16 +2,14 @@ from rest_framework import permissions
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        if request.user.is_authenticated:
-            return request.user.is_admin
-        return False
+    class IsAdminOrReadOnly(permissions.BasePermission):
+        def has_permission(self, request, view):
+            if request.method in permissions.SAFE_METHODS:
+                return True
+            return request.user.is_authenticated and request.user.is_admin
 
 
 class IsAuthorOrAdminOrReadOnly(permissions.BasePermission):
-
     def has_permission(self, request, view):
         return (
             request.method in permissions.SAFE_METHODS
@@ -29,7 +27,6 @@ class IsAuthorOrAdminOrReadOnly(permissions.BasePermission):
 
 
 class IsRoleAdmin(permissions.BasePermission):
-
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.is_admin
 
@@ -38,7 +35,6 @@ class IsRoleAdmin(permissions.BasePermission):
 
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
-
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated and request.user.is_user
