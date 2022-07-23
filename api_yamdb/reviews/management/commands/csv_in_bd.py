@@ -19,78 +19,27 @@ class Command(BaseCommand):
     help = 'import data from csv to base'
 
     def handle(self, *args, **options):
-        if options['u']:
-            try:
-                file = open(f'{settings.BASE_DIR}/static/data/{options["u"]}',
-                            'r', encoding='utf-8')
-            except IOError:
-                self.stdout.write(self.style.ERROR(
-                    'Не удалось открыть файл!'))
-            else:
-                with file:
-                    reader = csv.DictReader(file)
-                    CustomUser.objects.bulk_create(
-                        CustomUser(**data) for data in reader)
-        if options['c']:
-            try:
-                file = open(f'{settings.BASE_DIR}/static/data/{options["c"]}',
-                            'r', encoding='utf-8')
-            except IOError:
-                self.stdout.write(self.style.ERROR(
-                    'Не удалось открыть файл!'))
-            else:
-                with file:
-                    reader = csv.DictReader(file)
-                    Category.objects.bulk_create(
-                        Category(**data) for data in reader)
-        if options['g']:
-            try:
-                file = open(f'{settings.BASE_DIR}/static/data/{options["g"]}',
-                            'r', encoding='utf-8')
-            except IOError:
-                self.stdout.write(self.style.ERROR(
-                    'Не удалось открыть файл!'))
-            else:
-                with file:
-                    reader = csv.DictReader(file)
-                    Genre.objects.bulk_create(
-                        Genre(**data) for data in reader)
-        if options['m']:
-            try:
-                file = open(f'{settings.BASE_DIR}/static/data/{options["m"]}',
-                            'r', encoding='utf-8')
-            except IOError:
-                self.stdout.write(self.style.ERROR(
-                    'Не удалось открыть файл!'))
-            else:
-                with file:
-                    reader = csv.DictReader(file)
-                    Comment.objects.bulk_create(
-                        Comment(**data) for data in reader)
-        if options['r']:
-            try:
-                file = open(f'{settings.BASE_DIR}/static/data/{options["r"]}',
-                            'r', encoding='utf-8')
-            except IOError:
-                self.stdout.write(self.style.ERROR(
-                    'Не удалось открыть файл!'))
-            else:
-                with file:
-                    reader = csv.DictReader(file)
-                    Review.objects.bulk_create(
-                        Review(**data) for data in reader)
-        if options['t']:
-            try:
-                file = open(f'{settings.BASE_DIR}/static/data/{options["t"]}',
-                            'r', encoding='utf-8')
-            except IOError:
-                self.stdout.write(self.style.ERROR(
-                    'Не удалось открыть файл!'))
-            else:
-                with file:
-                    reader = csv.DictReader(file)
-                    Title.objects.bulk_create(
-                        Title(**data) for data in reader)
+        options_list = (options['u'], options['c'], options['g'], options['m'],
+                        options['r'], options['t'])
+        if any(map(None.__ne__, options_list)):
+            for elem in set(options_list):
+                if elem is not None:
+                    try:
+                        file = open(f'{settings.BASE_DIR}/static/data/{elem}',
+                                    'r', encoding='utf-8')
+                    except IOError:
+                        self.stdout.write(self.style.ERROR(
+                            'Не удалось открыть файл!'))
+                    else:
+                        model = next(filter(lambda x: x[1] == elem, TABLES),
+                                     None)
+                        with file:
+                            reader = csv.DictReader(file)
+                            model[0].objects.bulk_create(
+                                model[0](**data) for data in reader)
+                        self.stdout.write(self.style.SUCCESS(
+                            f'Модель {str(model[0])} обновлена!'))
+
         else:
             for model, data in TABLES:
                 try:
@@ -104,7 +53,6 @@ class Command(BaseCommand):
                         reader = csv.DictReader(file)
                         model.objects.bulk_create(
                             model(**data) for data in reader)
-        self.stdout.write(self.style.SUCCESS('Все данные загружены'))
 
     def add_arguments(self, parser):
         parser.add_argument(
